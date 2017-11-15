@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Snake</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <script src="scripts/jquery-3.2.1.min.js"></script>
+</head>
+<body>
+	<div class="game-positioner">
+		<div class="game-header">
+			<h1>Snake-game</h1>
+		</div>
+		<canvas id="canvas" height="600" width="1000"></canvas>
+		<input class="button-start" type="button" value="Start" autofocus>
+		<div class="scoreboard">
+			<p class="score">Score</p>
+			<p class="score-points">0</p>
+		</div>
+		<div class="gameover hidden">
+			<p>Game over</p>
+		</div>
+	</div>
+	<script src="scripts/canfi.js"></script>
+	<script src="scripts/snake.js"></script>
+</body>
+</html>
