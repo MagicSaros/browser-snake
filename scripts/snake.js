@@ -120,11 +120,15 @@ class Food extends Segment {
 }
 
 let snake = null;
+let snake2 = null;
 let size = 20;
 let snakeStartX = fieldWidth / 2;
 let snakeStartY = fieldHeight / 2;
+let snake2StartX = fieldWidth / 2 + size * 2;
+let snake2StartY = fieldHeight / 2 + size * 2;
 let snakeLength = 5;
 let snakeColor = 'Red';
+let snake2Color = 'Blue';
 let snakeSpeed = 1;
 let food = null;
 let foodX = 0;
@@ -135,12 +139,18 @@ let gameID = null;
 let gameRunning = false;
 let key = 37;
 let prevKey = 39;
+let key2 = 65;
+let prevKey2 = 68;
 
 const keyActions = {
     37: 'left',
     38: 'up',
     39: 'right',
-    40: 'down'
+    40: 'down', 
+    87: 'up',
+    65: 'left',
+    83: 'down',
+    68: 'right'
 };
 
 let checkOppositeKey = (key, prevKey) => {
@@ -166,15 +176,32 @@ $('body').keydown(event => {
     }
 });
 
+$('body').keydown(event => {
+    key2 = event.keyCode;
+    if (!checkOppositeKey(key2, prevKey2)) {
+        switch(key2) {
+            case 87: //w
+            case 65: //a
+            case 83: //s
+            case 68: //d
+            snake2.changeDirection(keyActions[key2]);
+            break;
+        };
+        prevKey2 = key2;
+    }
+});
+
 $('.button-start').click(() => {
     snake = new Snake(snakeStartX, snakeStartY, snakeLength, size, snakeColor, snakeSpeed);
+    snake2 = new Snake(snake2StartX, snake2StartY, snakeLength, size, snake2Color, snakeSpeed);
     snake.draw();
+    snake2.draw();
     
     do {
         foodY = Math.floor(Math.random() * (Math.floor(fieldHeight / size) - 2) + 1) * size;
         foodX = Math.floor(Math.random() * (Math.floor(fieldWidth / size) - 2) + 1) * size;
         food = new Food(foodX, foodY, size, foodColor);
-    } while (snake.checkFoodCollision(food));
+    } while (snake.checkFoodCollision(food) || snake2.checkFoodCollision(food));
     food.draw();
 
     if (!gameRunning) {
@@ -185,7 +212,8 @@ $('.button-start').click(() => {
         gameID = setInterval(() => {
             ctx.clearRect(0, 0, fieldWidth, fieldHeight);
             snake.move();
-            if (snake.checkSelfCollision() || snake.checkWallCollision()) {
+            snake2.move();
+            if ((snake.checkSelfCollision() || snake.checkWallCollision()) || (snake2.checkSelfCollision() || snake2.checkWallCollision())) {
                 clearInterval(gameID);
                 gameRunning = false;
                 $('.gameover').removeClass('hidden');
@@ -199,9 +227,19 @@ $('.button-start').click(() => {
                     foodX = Math.floor(Math.random() * (Math.floor(fieldWidth / size) - 2) + 1) * size;
                     food = new Food(foodX, foodY, size, foodColor);
                 } while (snake.checkFoodCollision(food));
+            } else if (snake2.checkFood(food)) {
+                snake2.eatFood(food);
+                score++;
+                $('.score-points').html(score);
+                do {
+                    foodY = Math.floor(Math.random() * (Math.floor(fieldHeight / size) - 2) + 1) * size;
+                    foodX = Math.floor(Math.random() * (Math.floor(fieldWidth / size) - 2) + 1) * size;
+                    food = new Food(foodX, foodY, size, foodColor);
+                } while (snake2.checkFoodCollision(food));
             }
             food.draw();
             snake.draw();
+            snake2.draw();
         }, 100);
     }
 });
