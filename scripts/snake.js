@@ -102,7 +102,7 @@ class Snake {
         }
     }
     
-    eatFood(food) {
+    eatFood() {
             let bodyLast = this.body[this.body.length - 1];
             this.body.push(new Segment(bodyLast.x - this.xSpeed, bodyLast.y + this.ySpeed, this.size, this.color));
     }
@@ -137,25 +137,29 @@ class Food extends Segment {
     }
 }
 
-let snake1 = null;
-let snake2 = null;
 let size = 20;
+
+let snake1 = null;
 let snake1StartX = fieldWidth / 2 + size * 10;
 let snake1StartY = fieldHeight / 2;
+let snake1Length = 5;
+let snake1Color = 'Red';
+let snake1Speed = 1;
+let snake1Direction = 'right';
+
+let snake2 = null;
 let snake2StartX = fieldWidth / 2 - size * 10;
 let snake2StartY = fieldHeight / 2;
-let snake1Length = 5;
 let snake2Length = 5;
-let snake1Color = 'Red';
 let snake2Color = 'Blue';
-let snake1Speed = 1;
 let snake2Speed = 1;
-let snake1Direction = 'right';
 let snake2Direction = 'right';
+
 let food = null;
 let foodX = null;
 let foodY = null;
 let foodColor = 'Green';
+
 let score1 = null;
 let score2 = null;
 let gameID = null;
@@ -220,9 +224,21 @@ $('.button-start').click(() => {
                 clearInterval(gameID);
                 gameRunning = false;
                 $('.gameover').removeClass('hidden');
-            } 
-            if (snake1.checkFood(food)) {
-                snake1.eatFood(food);
+            }
+            if (snake1.checkFood(food) && snake2.checkFood(food)) {
+                snake1.eatFood();
+                snake2.eatFood();
+                score1++;
+                score2++;
+                $('.score-points-1').html(score1);
+                $('.score-points-2').html(score2);
+                do {
+                    foodY = Math.floor(Math.random() * (Math.floor(fieldHeight / size) - 2) + 1) * size;
+                    foodX = Math.floor(Math.random() * (Math.floor(fieldWidth / size) - 2) + 1) * size;
+                    food = new Food(foodX, foodY, size, foodColor);
+                } while (snake1.checkFoodCollision(food) || snake2.checkFoodCollision(food));
+            } else if (snake1.checkFood(food)) {
+                snake1.eatFood();
                 score1++;
                 $('.score-points-1').html(score1);
                 do {
@@ -231,7 +247,7 @@ $('.button-start').click(() => {
                     food = new Food(foodX, foodY, size, foodColor);
                 } while (snake1.checkFoodCollision(food));
             } else if (snake2.checkFood(food)) {
-                snake2.eatFood(food);
+                snake2.eatFood();
                 score2++;
                 $('.score-points-2').html(score2);
                 do {
