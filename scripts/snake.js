@@ -140,10 +140,10 @@ class Food extends Segment {
 let snake1 = null;
 let snake2 = null;
 let size = 20;
-let snake1StartX = fieldWidth / 2;
+let snake1StartX = fieldWidth / 2 + size * 10;
 let snake1StartY = fieldHeight / 2;
-let snake2StartX = fieldWidth / 2 + size * 2;
-let snake2StartY = fieldHeight / 2 + size * 2;
+let snake2StartX = fieldWidth / 2 - size * 10;
+let snake2StartY = fieldHeight / 2;
 let snake1Length = 5;
 let snake2Length = 5;
 let snake1Color = 'Red';
@@ -191,8 +191,8 @@ $('body').keydown(event => {
 }); 
 
 $('.button-start').click(() => {
-    snake1 = new Snake(snake1StartX, snake1StartY, snake1Length, size, snake1Color, snake1Speed, snake1Direction);
-    snake2 = new Snake(snake2StartX, snake2StartY, snake2Length, size, snake2Color, snake2Speed, snake2Direction);
+    snake1 = new Snake(snake1StartX, snake1StartY, snake1Length, size, snake1Color, snake1Speed);
+    snake2 = new Snake(snake2StartX, snake2StartY, snake2Length, size, snake2Color, snake2Speed);
     snake1.draw();
     snake2.draw();
     snake1.changeDirection(snake1Direction);
@@ -207,7 +207,9 @@ $('.button-start').click(() => {
 
     if (!gameRunning) {
         score1 = 0;
-        $('.score-points').html(score1);
+        score2 = 0;
+        $('.score-points-1').html(score1);
+        $('.score-points-2').html(score2);
         $('.gameover').addClass('hidden');
         gameRunning = true;
         gameID = setInterval(() => {
@@ -222,7 +224,7 @@ $('.button-start').click(() => {
             if (snake1.checkFood(food)) {
                 snake1.eatFood(food);
                 score1++;
-                $('.score-points').html(score1);
+                $('.score-points-1').html(score1);
                 do {
                     foodY = Math.floor(Math.random() * (Math.floor(fieldHeight / size) - 2) + 1) * size;
                     foodX = Math.floor(Math.random() * (Math.floor(fieldWidth / size) - 2) + 1) * size;
@@ -230,8 +232,8 @@ $('.button-start').click(() => {
                 } while (snake1.checkFoodCollision(food));
             } else if (snake2.checkFood(food)) {
                 snake2.eatFood(food);
-                score1++;
-                $('.score-points').html(score1);
+                score2++;
+                $('.score-points-2').html(score2);
                 do {
                     foodY = Math.floor(Math.random() * (Math.floor(fieldHeight / size) - 2) + 1) * size;
                     foodX = Math.floor(Math.random() * (Math.floor(fieldWidth / size) - 2) + 1) * size;
