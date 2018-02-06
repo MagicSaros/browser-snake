@@ -36,8 +36,9 @@ class Snake {
         this.size = size;        
         this.color = color;
         this.speed = speed;
-        this.xSpeed = speed;
+        this.xSpeed = 0;
         this.ySpeed = 0;
+        this.direction = null;
         this.body = [];
         for (let i = 0; i < this.length; i++) {
             this.body.push(new Segment(this.x - i * this.size, this.y, this.size, this.color));
@@ -54,25 +55,42 @@ class Snake {
         this.body.unshift(new Segment(this.x, this.y, this.size, this.color));
         this.body.pop();
     }
-
+    
     changeDirection(direction) {
-        switch(direction) {
-            case 'up':
+        if (!this.checkDirectionCollision(direction)) {
+            this.direction = direction;
+            switch(this.direction) {
+                case 'up':
                 this.xSpeed = 0;
                 this.ySpeed = this.speed;
                 break;
-            case 'down':
+                case 'down':
                 this.xSpeed = 0;
                 this.ySpeed = -this.speed;
                 break;
-            case 'left':
+                case 'left':
                 this.xSpeed = -this.speed;
                 this.ySpeed = 0;
                 break;
-            case 'right':
+                case 'right':
                 this.xSpeed = this.speed;
                 this.ySpeed = 0;
                 break;
+            }
+        }
+    }
+
+    checkDirectionCollision(newDirection) {
+        if (this.direction === 'up' && newDirection === 'down') {
+            return true;
+        } else if (this.direction === 'down' && newDirection === 'up') {
+            return true;
+        } else if (this.direction === 'left' && newDirection === 'right') {
+            return true;
+        } else if (this.direction === 'right' && newDirection === 'left') {
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -84,7 +102,7 @@ class Snake {
         }
     }
     
-    eatFood(food) {
+    eatFood() {
             let bodyLast = this.body[this.body.length - 1];
             this.body.push(new Segment(bodyLast.x - this.xSpeed, bodyLast.y + this.ySpeed, this.size, this.color));
     }
@@ -119,89 +137,128 @@ class Food extends Segment {
     }
 }
 
-let snake = null;
 let size = 20;
-let snakeStartX = fieldWidth / 2;
-let snakeStartY = fieldHeight / 2;
-let snakeLength = 5;
-let snakeColor = 'Red';
-let snakeSpeed = 1;
+
+let snake1 = null;
+let snake1StartX = fieldWidth / 2 + size * 10;
+let snake1StartY = fieldHeight / 2;
+let snake1Length = 5;
+let snake1Color = 'Red';
+let snake1Speed = 1;
+let snake1Direction = 'right';
+
+let snake2 = null;
+let snake2StartX = fieldWidth / 2 - size * 10;
+let snake2StartY = fieldHeight / 2;
+let snake2Length = 5;
+let snake2Color = 'Blue';
+let snake2Speed = 1;
+let snake2Direction = 'right';
+
 let food = null;
-let foodX = 0;
-let foodY = 0;
+let foodX = null;
+let foodY = null;
 let foodColor = 'Green';
-let score = 0;
+
+let score1 = null;
+let score2 = null;
 let gameID = null;
 let gameRunning = false;
-let key = 37;
-let prevKey = 39;
 
 const keyActions = {
     37: 'left',
     38: 'up',
     39: 'right',
-    40: 'down'
-};
-
-let checkOppositeKey = (key, prevKey) => {
-    if (Math.abs(key - prevKey) == 2) {
-        return true;
-    } else {
-        return false;
-    }
+    40: 'down', 
+    65: 'left',
+    87: 'up',
+    68: 'right',
+    83: 'down'
 };
 
 $('body').keydown(event => {
-    key = event.keyCode;
-    if (!checkOppositeKey(key, prevKey)) {
+    let key = event.keyCode;
         switch(key) {
             case 37:
             case 38:
             case 39:
             case 40:
-            snake.changeDirection(keyActions[key]);
+            snake1.changeDirection(keyActions[key]);
+            break;
+            case 65: // A
+            case 87: // W
+            case 68: // D
+            case 83: // S
+            snake2.changeDirection(keyActions[key]);
             break;
         };
-        prevKey = key;
-    }
-});
+}); 
 
 $('.button-start').click(() => {
-    snake = new Snake(snakeStartX, snakeStartY, snakeLength, size, snakeColor, snakeSpeed);
-    snake.draw();
+    snake1 = new Snake(snake1StartX, snake1StartY, snake1Length, size, snake1Color, snake1Speed);
+    snake2 = new Snake(snake2StartX, snake2StartY, snake2Length, size, snake2Color, snake2Speed);
+    snake1.draw();
+    snake2.draw();
+    snake1.changeDirection(snake1Direction);
+    snake2.changeDirection(snake2Direction);
     
     do {
         foodY = Math.floor(Math.random() * (Math.floor(fieldHeight / size) - 2) + 1) * size;
         foodX = Math.floor(Math.random() * (Math.floor(fieldWidth / size) - 2) + 1) * size;
         food = new Food(foodX, foodY, size, foodColor);
-    } while (snake.checkFoodCollision(food));
+    } while (snake1.checkFoodCollision(food) || snake2.checkFoodCollision(food));
     food.draw();
 
     if (!gameRunning) {
-        score = 0;
-        $('.score-points').html(score);
+        score1 = 0;
+        score2 = 0;
+        $('.score-points-1').html(score1);
+        $('.score-points-2').html(score2);
         $('.gameover').addClass('hidden');
         gameRunning = true;
         gameID = setInterval(() => {
             ctx.clearRect(0, 0, fieldWidth, fieldHeight);
-            snake.move();
-            if (snake.checkSelfCollision() || snake.checkWallCollision()) {
+            snake1.move();
+            snake2.move();
+            if ((snake1.checkSelfCollision() || snake1.checkWallCollision()) || (snake2.checkSelfCollision() || snake2.checkWallCollision())) {
                 clearInterval(gameID);
                 gameRunning = false;
                 $('.gameover').removeClass('hidden');
-            } 
-            if (snake.checkFood(food)) {
-                snake.eatFood(food);
-                score++;
-                $('.score-points').html(score);
+            }
+            if (snake1.checkFood(food) && snake2.checkFood(food)) {
+                snake1.eatFood();
+                snake2.eatFood();
+                score1++;
+                score2++;
+                $('.score-points-1').html(score1);
+                $('.score-points-2').html(score2);
                 do {
                     foodY = Math.floor(Math.random() * (Math.floor(fieldHeight / size) - 2) + 1) * size;
                     foodX = Math.floor(Math.random() * (Math.floor(fieldWidth / size) - 2) + 1) * size;
                     food = new Food(foodX, foodY, size, foodColor);
-                } while (snake.checkFoodCollision(food));
+                } while (snake1.checkFoodCollision(food) || snake2.checkFoodCollision(food));
+            } else if (snake1.checkFood(food)) {
+                snake1.eatFood();
+                score1++;
+                $('.score-points-1').html(score1);
+                do {
+                    foodY = Math.floor(Math.random() * (Math.floor(fieldHeight / size) - 2) + 1) * size;
+                    foodX = Math.floor(Math.random() * (Math.floor(fieldWidth / size) - 2) + 1) * size;
+                    food = new Food(foodX, foodY, size, foodColor);
+                } while (snake1.checkFoodCollision(food));
+            } else if (snake2.checkFood(food)) {
+                snake2.eatFood();
+                score2++;
+                $('.score-points-2').html(score2);
+                do {
+                    foodY = Math.floor(Math.random() * (Math.floor(fieldHeight / size) - 2) + 1) * size;
+                    foodX = Math.floor(Math.random() * (Math.floor(fieldWidth / size) - 2) + 1) * size;
+                    food = new Food(foodX, foodY, size, foodColor);
+                } while (snake2.checkFoodCollision(food));
             }
             food.draw();
-            snake.draw();
+            snake1.draw();
+            snake2.draw();
         }, 100);
     }
 });
